@@ -88,17 +88,21 @@ func promptCompleter(suggestionTree *complete.Command, text string) []prompt.Sug
 	split := strings.Split(strings.TrimSpace(text), " ")
 	lastToken := split[len(split)-1]
 	// for branches dont undo most recent sorts with alphabetical sort
-	if !isBranchChangeCommand(lastToken) {
+	if !isBranchCompletionCommand(lastToken) {
 		sort.Strings(suggestions)
 	}
+
 	firstNonFlagIndex := -1
 	var sugg []prompt.Suggest
 	for i, suggestion := range suggestions {
 		// hack fix for quirk about complete lib
+		if strings.HasSuffix(text, " ") && strings.HasPrefix(suggestion, "-") && !strings.HasPrefix(suggestion, "--") {
+			continue
+		}
 		if len(suggestion) > 2 && strings.HasSuffix(text, " -") && strings.HasPrefix(suggestion, "-") && !strings.HasPrefix(suggestion, "--") {
 			continue
 		}
-		if strings.HasPrefix(suggestion, "-") {
+		if !strings.HasPrefix(suggestion, "-") && firstNonFlagIndex == -1 {
 			firstNonFlagIndex = i
 		}
 		sugg = append(sugg, prompt.Suggest{
@@ -106,8 +110,12 @@ func promptCompleter(suggestionTree *complete.Command, text string) []prompt.Sug
 			Description: descriptionMap[suggestion],
 		})
 	}
-	if isBranchChangeCommand(lastToken) && firstNonFlagIndex >= 0 {
+	if firstNonFlagIndex > 0 {
 		sugg = append(sugg[firstNonFlagIndex+1:], sugg[:firstNonFlagIndex]...)
+	}
+
+	if text == "bit " {
+		sugg = append(CobraCommandToSuggestions(CommonCommandsList()), sugg...)
 	}
 
 	return prompt.FilterHasPrefix(sugg, "", true)

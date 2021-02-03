@@ -146,3 +146,11 @@ git st$'\t\t' | zsh -i
 https://brbsix.github.io/2015/11/29/accessing-tab-completion-programmatically-in-bash/
 
 use macrorecorder?
+
+
+-[] dont show flags first (e.g. bit rebase -)
+-[x] show common commands first 
+-[] display descriptions for all available suggestions 
+-[] dont show single hyphen when space only 
+-[] when "-" display single dash flags 
+-[] flag filtering not working (e.g. bit push --all doesn't show "--all" suggestion)
